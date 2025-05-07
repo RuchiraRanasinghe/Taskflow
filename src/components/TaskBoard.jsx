@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useTasks } from '../context/TaskContext'
 import TaskList from './TaskList'
 import { motion } from 'framer-motion'
-import { DragDropContext } from 'react-beautiful-dnd'
+import { DragDropContext } from '@hello-pangea/dnd'
 
 function TaskBoard() {
   const { tasks, updateTask } = useTasks()

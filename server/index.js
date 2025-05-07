@@ -77,8 +77,8 @@ app.get('/api/tasks', async (req, res) => {
     // Format dates for client consumption
     const formattedTasks = rows.map(task => ({
       ...task,
-      startDate: task.start_date,
-      endDate: task.end_date
+      startDate: new Date(task.start_date),
+      endDate: new Date(task.end_date)
     }));
     
     res.json(formattedTasks);
@@ -114,27 +114,58 @@ app.get('/api/tasks/:id', async (req, res) => {
 });
 
 // Create a new task
+// app.post('/api/tasks', async (req, res) => {
+//   try {
+//     const { title, description, status, priority, startDate, endDate, progress } = req.body;
+    
+//     const [result] = await db.execute(
+//       `INSERT INTO tasks (title, description, status, priority, start_date, end_date, progress)
+//        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+//       [title, description, status, priority, startDate, endDate, progress]
+//     );
+    
+//     const newTask = {
+//       id: result.insertId,
+//       title,
+//       description,
+//       status,
+//       priority,
+//       startDate,
+//       endDate,
+//       progress
+//     };
+    
+//     res.status(201).json(newTask);
+//   } catch (err) {
+//     console.error('Error creating task:', err);
+//     res.status(500).json({ error: 'Failed to create task' });
+//   }
+// });
 app.post('/api/tasks', async (req, res) => {
   try {
     const { title, description, status, priority, startDate, endDate, progress } = req.body;
-    
+
+    // Convert to YYYY-MM-DD format
+    const formattedStartDate = startDate.split('T')[0];
+    const formattedEndDate = endDate.split('T')[0];
+
     const [result] = await db.execute(
       `INSERT INTO tasks (title, description, status, priority, start_date, end_date, progress)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, description, status, priority, startDate, endDate, progress]
+      [title, description, status, priority, formattedStartDate, formattedEndDate, progress]
     );
-    
+
     const newTask = {
       id: result.insertId,
       title,
       description,
       status,
       priority,
-      startDate,
-      endDate,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
       progress
     };
-    
+
     res.status(201).json(newTask);
   } catch (err) {
     console.error('Error creating task:', err);
@@ -146,16 +177,28 @@ app.post('/api/tasks', async (req, res) => {
 app.put('/api/tasks/:id', async (req, res) => {
   try {
     const { title, description, status, priority, startDate, endDate, progress } = req.body;
-    
+
+    const formattedStartDate = startDate.split('T')[0];
+    const formattedEndDate = endDate.split('T')[0];
+
     await db.execute(
       `UPDATE tasks 
        SET title = ?, description = ?, status = ?, priority = ?, 
            start_date = ?, end_date = ?, progress = ?
        WHERE id = ?`,
-      [title, description, status, priority, startDate, endDate, progress, req.params.id]
+      [title, description, status, priority, formattedStartDate, formattedEndDate, progress, req.params.id]
     );
-    
-    res.json({ id: parseInt(req.params.id), ...req.body });
+
+    res.json({
+      id: parseInt(req.params.id),
+      title,
+      description,
+      status,
+      priority,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      progress
+    });
   } catch (err) {
     console.error('Error updating task:', err);
     res.status(500).json({ error: 'Failed to update task' });

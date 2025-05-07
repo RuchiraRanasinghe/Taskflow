@@ -18,8 +18,19 @@ export function TaskProvider({ children }) {
       try {
         setIsLoading(true)
         // In a real app, this would come from your API
-        const tasks = await fetch('/api/tasks').response.json()
-        const dependencies = await fetch('/api/dependencies').response.json()
+        const tasks = await fetch('http://localhost:3001/api/tasks');
+        const tasksData = await tasks.json()
+        if (!tasksData) {
+          throw new Error('No tasks found')
+        }
+        setTasks(tasksData)
+
+        const dependencies = await fetch('http://localhost:3001/api/dependencies');
+        const dependenciesData = await dependencies.json()
+        if (!dependenciesData) {
+          throw new Error('No dependencies found')
+        }
+        setDependencies(dependenciesData)
         
         // For now, use sample data
         // const sampleTasks = [
@@ -116,8 +127,8 @@ export function TaskProvider({ children }) {
         //   { id: 8, predecessorId: 7, successorId: 8 }
         // ]
         
-        setTasks(tasks)
-        setDependencies(dependencies)
+        // setTasks(tasks)
+        // setDependencies(dependencies)
         setIsLoading(false)
       } catch (err) {
         setError('Failed to fetch tasks')
@@ -178,7 +189,7 @@ export function TaskProvider({ children }) {
   const addTask = async (task) => {
     try {
       // In a real app, this would be an API call
-      const response = await fetch('/api/tasks', {
+      const response = await fetch('http://localhost:3001/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(task)
@@ -204,15 +215,15 @@ export function TaskProvider({ children }) {
   const updateTask = async (updatedTask) => {
     try {
       // In a real app, this would be an API call
-      await fetch(`/api/tasks/${updatedTask.id}`, {
+      await fetch(`http://localhost:3001/api/tasks/${updatedTask.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedTask)
       })
       
-      // setTasks(tasks.map(task => 
-      //   task.id === updatedTask.id ? updatedTask : task
-      // ))
+      setTasks(tasks.map(task => 
+        task.id === updatedTask.id ? updatedTask : task
+      ))
     } catch (err) {
       setError('Failed to update task')
       console.error(err)
@@ -223,15 +234,15 @@ export function TaskProvider({ children }) {
   const deleteTask = async (id) => {
     try {
       // In a real app, this would be an API call
-      await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
+      await fetch(`http://localhost:3001/api/tasks/${id}`, { method: 'DELETE' })
       
       // Remove the task
-      // setTasks(tasks.filter(task => task.id !== id))
+      setTasks(tasks.filter(task => task.id !== id))
       
       // Remove any dependencies involving this task
-      // setDependencies(dependencies.filter(dep => 
-      //   dep.predecessorId !== id && dep.successorId !== id
-      // ))
+      setDependencies(dependencies.filter(dep => 
+        dep.predecessorId !== id && dep.successorId !== id
+      ))
     } catch (err) {
       setError('Failed to delete task')
       console.error(err)
@@ -249,7 +260,7 @@ export function TaskProvider({ children }) {
     
     try {
       // In a real app, this would be an API call
-      const response = await fetch('/api/dependencies', {
+      const response = await fetch('http://localhost:3001/api/dependencies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ predecessorId, successorId })
@@ -295,11 +306,11 @@ export function TaskProvider({ children }) {
   const removeDependency = async (predecessorId, successorId) => {
     try {
       // In a real app, this would be an API call
-      await fetch(`/api/dependencies/${depId}`, { method: 'DELETE' })
+      await fetch(`http://localhost:3001/api/dependencies/${depId}`, { method: 'DELETE' })
       
-      // setDependencies(dependencies.filter(dep => 
-      //   !(dep.predecessorId === predecessorId && dep.successorId === successorId)
-      // ))
+      setDependencies(dependencies.filter(dep => 
+        !(dep.predecessorId === predecessorId && dep.successorId === successorId)
+      ))
     } catch (err) {
       setError('Failed to remove dependency')
       console.error(err)

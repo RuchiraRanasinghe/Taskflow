@@ -1,5 +1,5 @@
 import React from 'react'
-import { Droppable, Draggable } from 'react-beautiful-dnd'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import TaskCard from './TaskCard'
 import { motion } from 'framer-motion'
 
